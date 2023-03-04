@@ -15,6 +15,7 @@ for pages in response:
     ids.append(pages["id"])
 
 user_list = []
+date_list = []
 
 pbar = ProgressBar()
 
@@ -31,16 +32,16 @@ def get_blackhole_list():
                 date = dt.date.fromisoformat(element["blackholed_at"].split('T')[0]) #date is of format 2023-03-22T08:42:00.000Z
                 if (date - today).days <= 31  and (date - today).days > 0:
                     user_list.append(element["user"]["login"])
+                    date_list.append(date.strftime('%d/%m/%Y'))
 
-    return user_list
 
 def create_login_file():
-    lst = get_blackhole_list()
+    get_blackhole_list()
     std_out_cpy = sys.stdout
     with open('logins.txt', 'w') as f:
         sys.stdout = f
-        for login in lst:
-            print(login);
+        for i in range(len(user_list)):
+            print(user_list[i], date_list[i]);
         sys.stdout = std_out_cpy
 
 
