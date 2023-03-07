@@ -7,44 +7,46 @@ sa = gspread.service_account()
 sheet = sa.open('Blackhole')
 
 work_sheet = sheet.worksheet('Blackhole')
-login_list = []
 date_list = []
 
-with open('logins.txt', 'r') as f:
-    for line in f:
-        login = line.split(' ')[0] # extracts login from line
-        login_sub = [login] #gspread.update() function requires a list of list
-        date = line.split(' ')[1]
-        date = date.replace('\n', '')
-        date_sub = [date]
-        login_list.append(login_sub)
-        date_list.append(date_sub)
+ws_values = work_sheet.get_all_values()
+updated_values = [['login', 'intra', 'date', 'note']]
 
-#loop does too many API calls
-# for i in range(len(login_list)):
-#     work_sheet.update_cell(2 + i, 1, login_list[i])
+def get_note(login):
+    for list in ws_values:
+        if login in list:
+            return list[3]
+    
+    return ''
 
-#this does one call but is a little weird
-cell_range = "A2:A" + str(len(login_list) + 1)
-work_sheet.update(cell_range, login_list)
+def update_cells():
+    with open('.logins', 'r') as f:
+        for line in f:
+            splitted_line = line.split(' ')
+            date = splitted_line[1].replace('\n', '')
+            updated_values.append(
+                [splitted_line[0],
+                'https://profile.intra.42.fr/users/' + splitted_line[0],
+                date,
+                get_note(splitted_line[0])])
+            date_list.append(date)
 
-for i in range(len(login_list)):
-    login_list[i][0] = 'https://profile.intra.42.fr/users/' + login_list[i][0]
-
-cell_range = "B2:B" + str(len(login_list) + 1)
-work_sheet.update(cell_range, login_list)
-
-cell_range = "C2:C" + str(len(date_list) + 1)
-work_sheet.update(cell_range, date_list)
+    work_sheet.update('A1:D' + str(len(updated_values)), updated_values)
 
 # change date cell color to match proximity to blackhole
-for i in range(len(date_list)):
-    date_object = dt.datetime.strptime(date_list[i][0], '%d/%m/%Y')
+def apply_colors():
+    for i in range(len(date_list)):
+        date_object = dt.datetime.strptime(date_list[i], '%d/%m/%Y')
 
-    work_sheet.format('C' + str(i + 2), {
-    "backgroundColor": {
-    "red": 1.0,
-    "green": (date_object.date() - today).days / 30,
-    "blue": 0.0
-    }
-})
+        work_sheet.format('C' + str(i + 2), {
+        "backgroundColor": {
+        "red": 1.0,
+        "green": (date_object.date() - today).days / 30,
+        "blue": 0.0
+        }
+        })
+
+
+work_sheet.clear()
+update_cells()
+apply_colors()
