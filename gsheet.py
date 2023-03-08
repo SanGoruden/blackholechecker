@@ -41,10 +41,11 @@ def apply_colors():
         work_sheet.format('C' + str(i + 2), {
         "backgroundColor": {
         "red": 1.0,
-        "green": (date_object.date() - today).days / 30,
+        "green": (date_object.date() - today).days / 31,
         "blue": 0.0
         }
         })
+        print((date_object.date() - today).days)
 
 
 work_sheet.clear()
