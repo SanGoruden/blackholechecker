@@ -45,8 +45,6 @@ def apply_colors():
         "blue": 0.0
         }
         })
-        print((date_object.date() - today).days)
-
 
 work_sheet.clear()
 update_cells()
